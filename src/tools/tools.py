@@ -7,6 +7,8 @@ import requests
 import re
 
 
+MAX_SCRAPE_CHARS = 4000
+
 def clean_text(text: str) -> str:
     """Collapse excess whitespace and drop empty/junk lines"""
 
@@ -43,11 +45,13 @@ def web_scrape_url(url:str) -> str:
 
     text = trafilatura.extract(response.text)
     if text:
-        return clean_text(text)
+        return clean_text(text)[:MAX_SCRAPE_CHARS]
 
     doc = Document(response.text)
     soup = BeautifulSoup(doc.summary(), "html.parser")
     text = soup.get_text(separator="\n", strip=True)
 
-    return clean_text(text) if text else "No content could be extracted from the URL."
+    if not text:
+        return "No content could be extracted from the URL."
+    return clean_text(text)[:MAX_SCRAPE_CHARS]
 
